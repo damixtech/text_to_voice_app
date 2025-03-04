@@ -6,7 +6,7 @@ from gtts import gTTS #Lib that allows you to convert texto to speech easly and 
 import pygame #Lib for playing the sound into the app
 import os #Lib that allows you to manage files and directories in the computer
 import shutil #Lib that allows you to manage high-level files in the computer
-from newspaper import Article #Extraer el contenido de las páginas webs
+from newspaper import Article #Extraer el contenido de las páginas webs y convertir
 import re #Expresiones regulares
 
 
