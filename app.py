@@ -5,11 +5,25 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename #Lib for manag
 from gtts import gTTS #Lib that allows you to convert texto to speech easly and fastly
 import pygame #Lib for playing the sound into the app
 import os #Lib that allows you to manage files and directories in the computer
+from pathlib import Path
 import shutil #Lib that allows you to manage high-level files in the computer
 from newspaper import Article #Extraer el contenido de las páginas webs y convertir
 import re #Expresiones regulares
 
+#Funciones
+def on_close():
+    """Check the operating system and return the Desktop path"""
+    system_type = os.name
+    if system_type == "nt":
+        desktop_path = Path(os.environ["USERPROFILE"]) / "Desktop"
+    else: 
+        desktop_path = Path.home() / "Desktop"
 
+    if os.path.isfile(desktop_path / "temp_audio.mp3"):
+        os.remove(desktop_path / "temp_audio.mp3")
+        app.window.destroy()
+    else: 
+        app.window.destroy()
 
 
 #Classes
@@ -17,9 +31,10 @@ class App():
     """Main class that create the main window of the app"""
     def __init__(self,window):
         self.window = window
-        self.window.geometry("650x580") #Final: "650x580+645+225"
+        self.window.geometry("650x580+645+225")
         self.window.title("Objects Oriented Programming")
         self.create_widgets()
+        self.check_os()
         
         
     def create_widgets(self):
@@ -64,6 +79,14 @@ class App():
         self.boton_quit = Button(self.window, text="Quit!", command=self.quit_app)
         self.boton_quit.pack()
 
+
+    def check_os(self):
+        self.system_type = os.name
+        if self.system_type == "nt":
+            self.desktop_path = Path(os.environ["USERPROFILE"]) / "Desktop"
+        else: 
+            self.desktop_path = Path.home() / "Desktop"
+
         
     def open_file(self):
         """Open text file from the computer with a file dialog"""
@@ -90,13 +113,14 @@ class App():
         #Sino llama al método que convierte desde texto introducido
         else: 
             self.convert_from_text()
+
         #Toplevel Popup Window 
         self.convert_finished()
 
 
     def convert_from_text(self):
         self.text_to_voice = gTTS(self.text, lang="es")
-        self.text_to_voice.save("./temp/audio.mp3")
+        self.text_to_voice.save(self.desktop_path / "temp_audio.mp3")
 
 
     def convert_from_url(self):
@@ -104,14 +128,14 @@ class App():
         article_obj.download()
         article_obj.parse()
         self.text_to_voice = gTTS(article_obj.text, lang="es")
-        self.text_to_voice.save("./temp/audio.mp3")
+        self.text_to_voice.save(self.desktop_path / "temp_audio.mp3")
 
 
     def save(self):
         """Save the final audio file. You can choise the path"""
         file_path = asksaveasfilename(defaultextension=".mp3", filetypes=[("Archivo de audio MP3", "*.mp3")])
         if file_path:
-            shutil.copy("./temp/audio.mp3", file_path)
+            shutil.copy(self.desktop_path / "temp_audio.mp3", file_path)
 
 
     def delete_text(self):
@@ -123,7 +147,7 @@ class App():
         """Play the audio"""
         pygame.init()
         pygame.mixer.init()
-        audio = pygame.mixer.Sound("./temp/audio.mp3")
+        audio = pygame.mixer.Sound(self.desktop_path / "temp_audio.mp3")
         audio.play()
 
 
@@ -132,10 +156,11 @@ class App():
         pygame.mixer.stop()
         
 
+    #PENDIENTE CORREGIR:
     def convert_finished(self):
         """Launch a popup that says you when the convertion has finished"""
         self.popup_finished = Toplevel(self.window)
-        self.popup_finished.geometry("300x50") #Final: "200x100+900+490"
+        self.popup_finished.geometry("250x100+900+490")
         self.popup_finished.title("")
         self.finished_label = Label(self.popup_finished, text="Convertion has finished!", font=("Ubuntu", 12, "bold"))
         self.finished_label.pack()
@@ -149,28 +174,16 @@ class App():
 
     def quit_app(self):
         """Delete de temp file and close the app"""
-        os.remove("./temp/audio.mp3")
-        self.window.destroy()
+        if os.path.isfile(self.desktop_path / "temp_audio.mp3"):
+            os.remove(self.desktop_path / "temp_audio.mp3")
+            self.window.destroy()
+        else: 
+            self.window.destroy()
     
 
-
-
-
-#TARES:
-#1.- Centrar ventana principal al iniciar
-#2.- Centrar ventana pop up
-#3.- Dar estilo a la ventana pop up
-#4.- Dar estilo a la app (investigar ttkbootstrap)
-#5.- Ver clase de CB donde habla de estilos en el código (buenas prácticas)
-#6.- Subir a github
-#7.- (Opcional) Mirar los acentos en la doc de gtts y el ritmo. 
-#8.- (Opcional) Mirar qué haría nltk en este caso
-#9.- 'Compilar y probar en windows' Problema con los paths?
-
-
-
-
 app = App(Tk())
+app.window.protocol("WM_DELETE_WINDOW", on_close)
 app.window.mainloop()
+
 
         
