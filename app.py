@@ -1,5 +1,6 @@
 #Modules and libs
 from tkinter import * #A basic framework to build simple desktop apps
+from ttkbootstrap import Style #To add a beautifull look to the app
 from tkinter.scrolledtext import ScrolledText #Lib for inserting a text box with scroll bar on the right
 from tkinter.filedialog import askopenfilename, asksaveasfilename #Lib for managing files on the computer
 from gtts import gTTS #Lib that allows you to convert texto to speech easly and fastly
@@ -7,8 +8,8 @@ import pygame #Lib for playing the sound into the app
 import os #Lib that allows you to manage files and directories in the computer
 from pathlib import Path
 import shutil #Lib that allows you to manage high-level files in the computer
-from newspaper import Article #Extraer el contenido de las páginas webs y convertir
-import re #Expresiones regulares
+from newspaper import Article #To extract the content from web pages
+import re #Regular expressions
 
 #Funciones
 def on_close():
@@ -19,9 +20,11 @@ def on_close():
     else: 
         desktop_path = Path.home() / "Desktop"
 
+    #If the file exists, delete it and close the app
     if os.path.isfile(desktop_path / "temp_audio.mp3"):
         os.remove(desktop_path / "temp_audio.mp3")
         app.window.destroy()
+    #Otherwise, close the app.
     else: 
         app.window.destroy()
 
@@ -30,11 +33,15 @@ def on_close():
 class App():
     """Main class that create the main window of the app"""
     def __init__(self,window):
+        self.style = Style(theme="morph")
         self.window = window
-        self.window.geometry("650x580+645+225")
+        self.window.geometry("650x650+645+225")
         self.window.title("Objects Oriented Programming")
-        self.create_widgets()
+        #Check the operating system
         self.check_os()
+        #Create all the main widgets
+        self.create_widgets()
+        
         
         
     def create_widgets(self):
@@ -43,9 +50,9 @@ class App():
         """Create the title of the app using two labels to do it"""
         self.header_frame = Frame(self.window, pady=20)
         self.header_frame.pack()
-        self.header = Label(self.header_frame, text="Text to voice", font=("Ubuntu", 24, "bold"))
+        self.header = Label(self.header_frame, text="TEXT TO VOICE", font=("Roboto Condensed", 32, "bold"))
         self.header.pack(side="top")
-        self.subheader = Label(self.header_frame, text="Convert text to voice fastly", font=("Ubuntu",14, "bold"))
+        self.subheader = Label(self.header_frame, text="Convert text to voice fastly", font=("Roboto Condensed",14, "bold"))
         self.subheader.pack(side="top")
         
         #Top Buttons
@@ -81,6 +88,8 @@ class App():
 
 
     def check_os(self):
+        """Check the operating system into the class and return the Desktop path.
+           It allows to close the app from the button 'quit' """
         self.system_type = os.name
         if self.system_type == "nt":
             self.desktop_path = Path(os.environ["USERPROFILE"]) / "Desktop"
@@ -94,7 +103,9 @@ class App():
         if filename:
             with open(filename, "r") as f_objt:
                 content = f_objt.read()
+                #Clean the tex-box
                 self.text_box.delete(1.0, "end")
+                #Insert the file content into the text-box
                 self.text_box.insert(1.0, content)
 
         
@@ -107,10 +118,10 @@ class App():
         self.url = self.text
         self.check_url = re.match(self.pattern, self.url)
 
-        #Si es una url llama al método que convierte desde url
+        #If it's an url call the correct function
         if self.check_url:
             self.convert_from_url()
-        #Sino llama al método que convierte desde texto introducido
+        #Otherwise, call the other function
         else: 
             self.convert_from_text()
 
@@ -119,11 +130,13 @@ class App():
 
 
     def convert_from_text(self):
+        '''Convert text from typing or file to voice'''
         self.text_to_voice = gTTS(self.text, lang="es")
         self.text_to_voice.save(self.desktop_path / "temp_audio.mp3")
 
 
     def convert_from_url(self):
+        '''Convert text from an url to voice'''
         article_obj = Article(self.url)
         article_obj.download()
         article_obj.parse()
@@ -152,13 +165,12 @@ class App():
 
 
     def stop_sound(self):
-        """Pause the audio"""
+        """Stop the audio"""
         pygame.mixer.stop()
         
 
-    #PENDIENTE CORREGIR:
     def convert_finished(self):
-        """Launch a popup that says you when the convertion has finished"""
+        """Launch a popup that shows when the convertion has finished"""
         self.popup_finished = Toplevel(self.window)
         self.popup_finished.geometry("250x100+900+490")
         self.popup_finished.title("")
@@ -174,14 +186,17 @@ class App():
 
     def quit_app(self):
         """Delete de temp file and close the app"""
+        #If the file exists, delete it and close the app
         if os.path.isfile(self.desktop_path / "temp_audio.mp3"):
             os.remove(self.desktop_path / "temp_audio.mp3")
             self.window.destroy()
+        #Otherwise close the app
         else: 
             self.window.destroy()
     
 
 app = App(Tk())
+#Before closing the app from the 'x' button, call the on_close function.
 app.window.protocol("WM_DELETE_WINDOW", on_close)
 app.window.mainloop()
 

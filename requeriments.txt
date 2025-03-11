@@ -1,0 +1,5 @@
+ttkbootstrap==1.10.1
+gTTS==2.5.4
+pygame==2.6.1
+nltk==3.9.1
+newspaper3k==0.2.8
