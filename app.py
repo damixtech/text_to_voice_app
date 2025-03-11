@@ -36,7 +36,7 @@ class App():
         self.style = Style(theme="morph")
         self.window = window
         self.window.geometry("650x650+645+225")
-        self.window.title("Objects Oriented Programming")
+        self.window.title("Text to voice")
         #Check the operating system
         self.check_os()
         #Create all the main widgets
